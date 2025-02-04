@@ -2,6 +2,7 @@ import { productsRouter } from "../modules/products/Products.router";
 import { orderRouter } from "../modules/orders/order.router";
 import express from "express";
 import { RegisterRouter } from "../modules/user/user.router";
+import { AuthRouter } from "../modules/auth/auth.route";
 
 const router = express.Router();
 const modulesRoute = [
@@ -15,6 +16,10 @@ const modulesRoute = [
   },
   {
     name: RegisterRouter,
+    route: "/auth",
+  },
+  {
+    name: AuthRouter,
     route: "/auth",
   },
 ];
