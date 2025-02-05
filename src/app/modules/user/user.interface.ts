@@ -7,4 +7,4 @@ export interface TUser {
     role: "admin" | "user";
     isActive: boolean;
   }
-  export type TUserRole =  keyof typeof UserRole;
+  export type TUserRoles =  keyof typeof UserRole;
