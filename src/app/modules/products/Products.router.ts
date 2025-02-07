@@ -1,9 +1,11 @@
 import express from "express";
 import { ProductControllers } from "./products.controller";
+import validateRequest from "../../middleware/validateRequest";
+import { ProductValidation } from "./products.validation";
 const router = express.Router();
 
 // Create a product route
-router.post("/", ProductControllers.createProduct);
+router.post("/", validateRequest(ProductValidation.createProductValidation)  , ProductControllers.createProduct);
 
 // Get all products route
 router.get("/", ProductControllers.getAllProduct);

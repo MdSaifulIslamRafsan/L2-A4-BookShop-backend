@@ -9,6 +9,11 @@ const ProductSchema = new Schema<ProductType>(
       required: [true, "Product title is required"],
       trim: true,
     },
+    image: {
+      type: String,
+      required: [true, "Product image is required"],
+      trim: true,
+    },
     author: {
       type: String,
       required: [true, "Product author is required"],

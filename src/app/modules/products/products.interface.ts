@@ -4,6 +4,7 @@ export type categoryType = "Fiction" | "Science" | "SelfDevelopment" | "Poetry" 
 export interface ProductType {
     title: string;
     author: string;
+    image : string;
     price: number;
     category : categoryType;
     description : string;
