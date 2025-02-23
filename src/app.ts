@@ -9,7 +9,7 @@ const app: Application = express();
 // Middleware to handle CORS requests
 app.use(cors(
   {
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "https://a4l2bookstore.vercel.app"],
     credentials: true,
   }
 ));

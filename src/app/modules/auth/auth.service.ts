@@ -3,7 +3,7 @@ import AppError from "../../errors/AppError";
 import User from "../user/user.model";
 import { TLoginUser } from "./auth.interface";
 import bcrypt from "bcrypt";
-import { createJwtToken } from "./auth.utils";
+import { createJwtToken, verifyToken } from "./auth.utils";
 import config from "../../config";
 
 const loginUserFromDB = async (payload: TLoginUser) => {
@@ -41,7 +41,32 @@ const loginUserFromDB = async (payload: TLoginUser) => {
   };
   
 };
+const refreshTokenFromCookie = async (refreshToken: string) => {
+  const decoded = verifyToken(refreshToken, config.refresh_token as string);
+
+  const { email } = decoded;
+  const user = await User.findOne({email});
+  if (!user) {
+    throw new AppError(StatusCodes.FORBIDDEN, 'User not found');
+  }
+  if (!user.isActive) {
+    throw new AppError(StatusCodes.FORBIDDEN, 'User is blocked');
+  }
+  const jwtPayload = {
+    email: user.email,
+    role: user.role,
+  };
+  const accessToken = createJwtToken(
+    jwtPayload,
+    config.access_token as string,
+    config.access_expires_in as number,
+  );
+  return {
+    accessToken,
+  };
+};
 
 export const AuthService = {
   loginUserFromDB,
+  refreshTokenFromCookie
 };

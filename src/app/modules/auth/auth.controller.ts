@@ -21,8 +21,18 @@ const loginUser = catchAsync(async(req, res) => {
         data: result,
       });
 })
-
+const refreshToken = catchAsync(async (req , res) => {
+  const {refreshToken} = req.cookies;
+  const result = await AuthService.refreshTokenFromCookie(refreshToken)
+  sendResponse(res , {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Token refreshed successfully',
+    data: result,
+  })
+})
 
 export const AuthController = {
     loginUser,
+    refreshToken
 };
