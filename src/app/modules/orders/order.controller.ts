@@ -34,6 +34,7 @@ const createOrder = async (req: Request, res: Response) => {
 };
 
 const verifyPayment = catchAsync(async (req, res) => {
+  console.log(req.query);
   const result = await orderService.verifyPayment(
     req.query.order_id as string
   );
@@ -52,6 +53,18 @@ const getOrders = catchAsync(async (req, res) => {
     success: true,
     statusCode: StatusCodes.OK,
     message: "Orders retrieved successfully",
+    data: order,
+  });
+});
+const getOrder = catchAsync(async (req, res) => {
+  const {orderId} = req.params;
+  
+  const order = await orderService.getOrderFromDB(orderId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: "Order retrieved successfully",
     data: order,
   });
 });
@@ -84,5 +97,6 @@ export const orderController = {
   createOrder,
   calculateTotalRevenue,
   verifyPayment,
-  getOrders
+  getOrders,
+  getOrder
 };

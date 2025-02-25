@@ -15,6 +15,20 @@ const createUser = catchAsync(async(req , res) => {
         message: 'User registered successfully',
         data: result,
       })
+});
+const getUsers = catchAsync(async(req, res) =>{
+  
+const result = await UserService.getUsersFromDB();
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: "Users Retrieved successfully",
+    data: result,
+  })
 })
 
-export default createUser;
+export const userController = {
+  createUser,
+  getUsers,
+
+};

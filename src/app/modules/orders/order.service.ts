@@ -9,37 +9,51 @@ type TError = {
 
 // create a new order in the database
 const orderCreateFormDB = async (order: OrderType, client_ip: string) => {
+  
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-    const product = await ProductModel.findById(order.product).session(session);
-    if (!product) {
-      throw new Error("Product not found");
+
+    let totalPrice = 0;
+    const productUpdates = [];
+
+    for (const item of order.products) {
+      const product = await ProductModel.findById(item.product).session(session);
+      if (!product) {
+        throw new Error(`Product with ID ${item.product} not found`);
+      }
+      if (item.quantity > product.quantity) {
+        throw new Error(`Only ${product.quantity} items available for ${product.title}`);
+      }
+
+      totalPrice += product.price * item.quantity;
+      productUpdates.push({
+        updateOne: {
+          filter: { _id: item.product },
+          update: { $inc: { quantity: -item.quantity } },
+        },
+      });
     }
-    if (order.quantity > product.quantity) {
-      throw new Error(`Only ${product.quantity} items available in stock`);
-    }
-    order.totalPrice = product.price * order.quantity;
-    await ProductModel.findByIdAndUpdate(
-      order.product,
-      { $inc: { quantity: -order.quantity } },
-      { session }
-    );
-    const newOrder = await OrderModel.create([order], { session });
+
+    // Update multiple product quantities at once
+    await ProductModel.bulkWrite(productUpdates, { session });
+
+    // Save order
+    const newOrder = await OrderModel.create([{ ...order, totalPrice }], { session });
 
     await session.commitTransaction();
     session.endSession();
 
-      // Payment gateway call outside the transaction
+    // Payment integration
     const shurjopayPayload = {
-      amount: order?.totalPrice,
+      amount: totalPrice,
       order_id: newOrder[0]?._id,
       currency: "BDT",
-      customer_name: order?.name,
-      customer_email: order?.email,
-      customer_phone: "N/A",
+      customer_name: order.name,
+      customer_email: order.email,
+      customer_phone: order.phone,
       customer_city: "N/A",
-      customer_address: "N/A",
+      customer_address: order.address,
       client_ip,
     };
 
@@ -58,6 +72,7 @@ const orderCreateFormDB = async (order: OrderType, client_ip: string) => {
         }
       );
     }
+
     return payment.checkout_url;
   } catch (error) {
     await session.abortTransaction();
@@ -65,6 +80,7 @@ const orderCreateFormDB = async (order: OrderType, client_ip: string) => {
     throw new Error((error as TError).message);
   }
 };
+
 
 const verifyPayment = async (orderId: string) => {
   const verifiedPayment = await orderUtils.verifyPayment(orderId);
@@ -98,6 +114,13 @@ const getOrders = async () => {
   return data;
 };
 
+const getOrderFromDB = async (orderId : string) => {
+  const data = await OrderModel.findById(orderId);
+
+ 
+  return data;
+}
+
 // Calculate the total revenue from the database
 const calculateTotalRevenueFromDB = async () => {
   // Use MongoDB's aggregation pipeline to calculate total revenue
@@ -122,5 +145,6 @@ export const orderService = {
   orderCreateFormDB,
   calculateTotalRevenueFromDB,
   verifyPayment,
-  getOrders
+  getOrders,
+  getOrderFromDB
 };

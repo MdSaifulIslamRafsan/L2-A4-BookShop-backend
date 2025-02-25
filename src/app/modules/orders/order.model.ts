@@ -8,15 +8,16 @@ const orderSchema = new Schema({
         type: String,
         required: [true, "email is required"]
     }, 
-    product : {
-        type: Schema.Types.ObjectId,
-        ref: "Products",
-        required: [true, "product is required"]
-    },
-    quantity : {
-        type: Number,
-        required: [true, "quantity is required"]
-    },
+    products: [
+        {
+          product: { type: mongoose.Schema.Types.ObjectId, ref: "ProductModel", required: [true, "Product is required"]},
+          quantity: {
+            type: Number,
+            required: [true, "quantity is required"]
+          },
+        },
+      ],
+    
     totalPrice : {
         type: Number,
         required: [true, "totalPrice is required"]
@@ -28,6 +29,14 @@ const orderSchema = new Schema({
         type : String,
         enum: ["pending", "paid", "shipped", "completed", "canceled"],
         default: "pending"
+    },
+    address: {
+        type: String,
+        required: [true, "address is required"]
+    },
+    phone: {
+        type: String,
+        required: [true, "phone is required"]
     },
     transaction : {
         id: String,

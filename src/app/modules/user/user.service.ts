@@ -23,9 +23,14 @@ const newUser = {
 
 return newUser;
 }
+const getUsersFromDB = async() => {
+    const result = await User.find()
+    return result;
+}
 
 
 
 export const UserService = {
     createUserIntoDB,
+    getUsersFromDB
 }
