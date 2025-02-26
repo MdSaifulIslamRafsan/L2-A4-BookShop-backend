@@ -9,7 +9,6 @@ type TError = {
 
 // create a new order in the database
 const orderCreateFormDB = async (order: OrderType, client_ip: string) => {
-  
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
@@ -18,12 +17,16 @@ const orderCreateFormDB = async (order: OrderType, client_ip: string) => {
     const productUpdates = [];
 
     for (const item of order.products) {
-      const product = await ProductModel.findById(item.product).session(session);
+      const product = await ProductModel.findById(item.product).session(
+        session
+      );
       if (!product) {
         throw new Error(`Product with ID ${item.product} not found`);
       }
       if (item.quantity > product.quantity) {
-        throw new Error(`Only ${product.quantity} items available for ${product.title}`);
+        throw new Error(
+          `Only ${product.quantity} items available for ${product.title}`
+        );
       }
 
       totalPrice += product.price * item.quantity;
@@ -39,7 +42,9 @@ const orderCreateFormDB = async (order: OrderType, client_ip: string) => {
     await ProductModel.bulkWrite(productUpdates, { session });
 
     // Save order
-    const newOrder = await OrderModel.create([{ ...order, totalPrice }], { session });
+    const newOrder = await OrderModel.create([{ ...order, totalPrice }], {
+      session,
+    });
 
     await session.commitTransaction();
     session.endSession();
@@ -81,45 +86,46 @@ const orderCreateFormDB = async (order: OrderType, client_ip: string) => {
   }
 };
 
-
 const verifyPayment = async (orderId: string) => {
   const verifiedPayment = await orderUtils.verifyPayment(orderId);
   if (verifiedPayment.length) {
-    await OrderModel.findOneAndUpdate({
-     "transaction.id" : orderId
-    },{
-      $set: {
-       "transaction.bank_status": verifiedPayment[0].bank_status,
-        "transaction.sp_code": verifiedPayment[0].sp_code,
-        "transaction.sp_message": verifiedPayment[0].sp_message,
-        "transaction.transactionStatus": verifiedPayment[0].transaction_status,
-        "transaction.method": verifiedPayment[0].method,
-        "transaction.date_time": verifiedPayment[0].date_time,
-        status:
-          verifiedPayment[0].bank_status == "Success"
-            ? "Paid"
-            : verifiedPayment[0].bank_status == "Failed"
-            ? "Pending"
-            : verifiedPayment[0].bank_status == "Cancel"
-            ? "Cancelled"
-            : "",
-
+    await OrderModel.findOneAndUpdate(
+      {
+        "transaction.id": orderId,
       },
-    });
+      {
+        $set: {
+          "transaction.bank_status": verifiedPayment[0].bank_status,
+          "transaction.sp_code": verifiedPayment[0].sp_code,
+          "transaction.sp_message": verifiedPayment[0].sp_message,
+          "transaction.transactionStatus":
+            verifiedPayment[0].transaction_status,
+          "transaction.method": verifiedPayment[0].method,
+          "transaction.date_time": verifiedPayment[0].date_time,
+          status:
+            verifiedPayment[0].bank_status == "Success"
+              ? "Paid"
+              : verifiedPayment[0].bank_status == "Failed"
+                ? "Pending"
+                : verifiedPayment[0].bank_status == "Cancel"
+                  ? "Cancelled"
+                  : "",
+        },
+      }
+    );
   }
   return verifiedPayment;
 };
 const getOrders = async () => {
-  const data = await OrderModel.find();
+  const data = await OrderModel.find().populate("products.product");
   return data;
 };
 
-const getOrderFromDB = async (orderId : string) => {
+const getOrderFromDB = async (orderId: string) => {
   const data = await OrderModel.findById(orderId).populate("products.product");
 
- 
   return data;
-}
+};
 
 // Calculate the total revenue from the database
 const calculateTotalRevenueFromDB = async () => {
@@ -138,10 +144,27 @@ const calculateTotalRevenueFromDB = async () => {
   ]);
   return result[0].totalRevenue;
 };
-const  getOrdersByEmailFromDB = async(email: string) => {
-  const result = await OrderModel.find({email}).populate("products.product");
+
+const deleteOrderFromDB = async (id: string) => {
+  const order = await OrderModel.findById(id);
+  if (!order) {
+    throw new Error("Order not found");
+  }
+  const result = await OrderModel.findByIdAndDelete(id);
+  return result;
+};
+const updateOrderStatusFromDB = async( orderId: string, status: string) => {
+  const result = await OrderModel.findByIdAndUpdate(
+    orderId,
+    { status },
+    { new: true }
+  );
   return result;
 }
+const getOrdersByEmailFromDB = async (email: string) => {
+  const result = await OrderModel.find({ email }).populate("products.product");
+  return result;
+};
 
 // Export the service methods for use in other modules
 
@@ -151,5 +174,7 @@ export const orderService = {
   verifyPayment,
   getOrders,
   getOrderFromDB,
-  getOrdersByEmailFromDB
+  getOrdersByEmailFromDB,
+  deleteOrderFromDB,
+  updateOrderStatusFromDB
 };

@@ -15,9 +15,13 @@ router.get('/revenue', orderController.calculateTotalRevenue)
 router.get('/verify', auth(UserRole.user), orderController.verifyPayment)
 
 // Route to get all orders
-router.get('/', orderController.getOrders)
+router.get('/', auth(UserRole.admin), orderController.getOrders)
 router.get('/:orderId', orderController.getOrder)
-router.get('/email/:email', auth(UserRole.user), orderController.getOrdersByEmail);
+router.get('/email/:email', auth(UserRole.user, UserRole.admin), orderController.getOrdersByEmail);
+
+
+router.delete('/:id', auth(UserRole.admin), orderController.deleteOrder)
+router.patch('/:id/status', auth(UserRole.admin), orderController.updateOrderStatus);
 
 
 // Export the router to be used in other parts of the application

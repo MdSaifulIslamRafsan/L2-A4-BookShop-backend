@@ -102,6 +102,29 @@ const getOrdersByEmail = catchAsync(async (req , res)=> {
     data: orders,
   });
 })
+const deleteOrder = catchAsync(async(req , res) => {
+  const {id} = req.params;
+ const result = await orderService.deleteOrderFromDB(id as string);
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: "Order deleted successfully",
+    data: result,
+  });
+})
+
+const updateOrderStatus = catchAsync(async(req, res) => {
+  const {id} = req.params;
+  const {status} = req.body;
+  const result = await orderService.updateOrderStatusFromDB(id as string, status as string);
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: "Order status updated successfully",
+    data: result,
+  });
+})
+
 
 export const orderController = {
   createOrder,
@@ -109,5 +132,7 @@ export const orderController = {
   verifyPayment,
   getOrders,
   getOrder,
-  getOrdersByEmail
+  getOrdersByEmail,
+  deleteOrder,
+  updateOrderStatus
 };
