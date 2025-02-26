@@ -25,6 +25,29 @@ const createUserValidation  = z.object({
 })
 
 
+
+const updateUserRoleValidation = z.object({
+  body: z.object({
+    role: z.enum(["admin", "user"], {
+      required_error: "Role is required",
+    }),
+  }),
+});
+
+const updateUserStatusValidation = z.object({
+  body: z.object({
+    isActive: z.boolean({
+      required_error: "Status is required",
+    }),
+  }),
+});
+
+
+
+
+
 export const UserValidation  = {
-    createUserValidation
+    createUserValidation,
+    updateUserRoleValidation,
+    updateUserStatusValidation,
 }

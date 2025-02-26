@@ -6,5 +6,6 @@ export interface TUser {
     password: string;
     role: "admin" | "user";
     isActive: boolean;
+    passwordChangeAt: Date;
   }
   export type TUserRoles =  keyof typeof UserRole;

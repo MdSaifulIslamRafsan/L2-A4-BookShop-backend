@@ -34,7 +34,7 @@ const createOrder = async (req: Request, res: Response) => {
 };
 
 const verifyPayment = catchAsync(async (req, res) => {
-  console.log(req.query);
+ 
   const result = await orderService.verifyPayment(
     req.query.order_id as string
   );
@@ -91,12 +91,23 @@ const calculateTotalRevenue = async (req: Request, res: Response) => {
   }
 };
 
-// Exporting the controller functions as part of the orderController object
+const getOrdersByEmail = catchAsync(async (req , res)=> {
+  const {email} = req.params;
+  const orders = await orderService.getOrdersByEmailFromDB(email as string);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: "Orders retrieved successfully",
+    data: orders,
+  });
+})
 
 export const orderController = {
   createOrder,
   calculateTotalRevenue,
   verifyPayment,
   getOrders,
-  getOrder
+  getOrder,
+  getOrdersByEmail
 };

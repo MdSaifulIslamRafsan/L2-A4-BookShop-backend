@@ -17,6 +17,8 @@ router.get('/verify', auth(UserRole.user), orderController.verifyPayment)
 // Route to get all orders
 router.get('/', orderController.getOrders)
 router.get('/:orderId', orderController.getOrder)
+router.get('/email/:email', auth(UserRole.user), orderController.getOrdersByEmail);
+
 
 // Export the router to be used in other parts of the application
 export const orderRouter = router;

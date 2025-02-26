@@ -3,6 +3,7 @@ import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { AuthService } from "./auth.service";
 import config from "../../config";
+import { TUser } from "../user/user.interface";
 
 const loginUser = catchAsync(async(req, res) => {
     const result = await AuthService.loginUserFromDB(req.body);
@@ -31,8 +32,20 @@ const refreshToken = catchAsync(async (req , res) => {
     data: result,
   })
 })
+const changePassword = catchAsync(async(req ,res)=>{
 
+  const user = req.user as TUser;
+ 
+  const result = await AuthService.changePasswordIntoDB(user , req.body)
+  sendResponse(res , {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Password Updated successfully',
+    data : result,
+  })
+})
 export const AuthController = {
     loginUser,
-    refreshToken
+    refreshToken,
+    changePassword
 };

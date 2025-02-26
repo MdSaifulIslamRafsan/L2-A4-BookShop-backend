@@ -38,6 +38,11 @@ const auth = (...RequiredRoles: TUserRoles[]) => {
         'You are not authorized to access this resource',
       );
     }
+    const { iat } = decoded;
+    const passwordChangedTime = new Date(user?.passwordChangeAt).getTime() / 1000;
+  if (passwordChangedTime > iat!) {
+    throw new AppError(StatusCodes.UNAUTHORIZED, 'user token not valid');
+  }
 
     req.user = decoded as JwtPayload;
     next();

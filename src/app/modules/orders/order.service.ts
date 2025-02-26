@@ -115,7 +115,7 @@ const getOrders = async () => {
 };
 
 const getOrderFromDB = async (orderId : string) => {
-  const data = await OrderModel.findById(orderId);
+  const data = await OrderModel.findById(orderId).populate("products.product");
 
  
   return data;
@@ -138,6 +138,10 @@ const calculateTotalRevenueFromDB = async () => {
   ]);
   return result[0].totalRevenue;
 };
+const  getOrdersByEmailFromDB = async(email: string) => {
+  const result = await OrderModel.find({email}).populate("products.product");
+  return result;
+}
 
 // Export the service methods for use in other modules
 
@@ -146,5 +150,6 @@ export const orderService = {
   calculateTotalRevenueFromDB,
   verifyPayment,
   getOrders,
-  getOrderFromDB
+  getOrderFromDB,
+  getOrdersByEmailFromDB
 };
